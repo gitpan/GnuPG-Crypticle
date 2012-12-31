@@ -1,0 +1,32 @@
+---
+abstract: 'Encryption/decryption module'
+author:
+  - 'Brad Barden <iamb@mifflinet.net>'
+build_requires:
+  Test::More: 0
+configure_requires:
+  Module::Build: 0.40
+dynamic_config: 1
+generated_by: 'Module::Build version 0.4003, CPAN::Meta::Converter version 2.120921'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: GnuPG-Crypticle
+provides:
+  GnuPG::Crypticle:
+    file: lib/GnuPG/Crypticle.pm
+    version: 0.020
+requires:
+  Fcntl: 0
+  File::Copy: 0
+  File::Path: 0
+  File::Spec: 0
+  File::stat: 0
+  IO::Handle: 0
+  Moose: 2
+  MooseX::Role::Tempdir: 0
+  perl: 5.006
+resources:
+  license: http://dev.perl.org/licenses/
+version: 0.020
