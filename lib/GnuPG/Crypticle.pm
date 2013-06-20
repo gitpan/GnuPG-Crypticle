@@ -18,7 +18,7 @@ Version 0.01
 
 =cut
 
-our $VERSION = '0.020';
+our $VERSION = '0.021';
 
 
 =head1 SYNOPSIS
@@ -128,6 +128,7 @@ sub BUILD {
       File::Path::make_path($gpgdir, {error=>\$mkpatherr}) or
       (-d $gpgdir and -w $gpgdir)
     ) {
+      umask($cumask);
       if ($mkpatherr) {
         # ugly but necessary, perldoc File::Path for info
         my $k = (keys %{$mkpatherr->[0]})[0];
@@ -136,11 +137,13 @@ sub BUILD {
       else {
         $mkpatherr = "$!";
       }
-      $self->log_fatal("Unable to create gpg_temp_home '\%s': \%s", $gpgdir, $mkpatherr);
+      umask($cumask);
+      die "Unable to create gpg_temp_home '$gpgdir': $mkpatherr";
     }
     for my $f (qw/secring.gpg trustdb.gpg pubring.gpg/) {
       my $file = File::Spec->catfile($homedir, $f);
       unless (File::Copy::cp($file, $gpgdir)) {
+        umask($cumask);
         die "Failed to copy '$file' to '$gpgdir': $!";
       }
     }
@@ -158,13 +161,13 @@ parameters:
 
 =over 2
 
-src: file name or handle to be decrypted
+=item src
 
-=back
+file name or handle to be decrypted
 
-=over 2
+=item dst
 
-dst: file name or handle to which decrypted output is sent
+file name or handle to which decrypted output is sent
 
 =back
 
@@ -205,13 +208,13 @@ file name or handle to which encrypted output is sent
 
 arguments passed directly to gpg execution
 
+=back
+
 returns:
 
 =over 2
 
 valid signature if present, or true
-
-=back
 
 =back
 
@@ -250,7 +253,7 @@ sub detect_encryption {
   if (ref($opts{file}) and defined(fileno($opts{file}))) {
     $fh = $opts{file};
   }
-  elsif (!open($fh, '<', $opts{file})) {
+  elsif (!open($fh, '<:raw', $opts{file})) {
     die "Failed detecting encryption: $!";
   }
   my $stat = stat($fh);
@@ -302,8 +305,8 @@ sub _call_gpg {
   if ($dest) {
     unless (defined(fileno($dest))) {
       my $file = $dest;
-      $dest = IO::Handle->new;
-      unless (open($dest, '>', $file)) {
+      $dest = undef;
+      unless (open($dest, '>:raw', $file)) {
         die "Failed to open dest file '$file': $!";
       }
       $close_dest = 1;
@@ -320,8 +323,8 @@ sub _call_gpg {
   if ($error) {
     unless (defined(fileno($error))) {
       my $file = $error;
-      $error = IO::Handle->new;
-      unless (open($error, '>>', $file)) {
+      $error = undef;
+      unless (open($error, '>>:raw', $file)) {
         die "Failed to open error file '$file': $!";
       }
       $close_error = 1;
@@ -338,8 +341,8 @@ sub _call_gpg {
   if ($source) {
     unless (defined(fileno($source))) {
       my $file = $source;
-      $source = IO::Handle->new;
-      unless (open($source, '<', $file)) {
+      $source = undef;
+      unless (open($source, '<:raw', $file)) {
         die "Failed to open source file '$file': $!";
       }
       $close_source = 1;
