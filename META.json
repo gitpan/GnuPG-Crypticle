@@ -1,33 +1,27 @@
 {
-   "abstract" : "unknown",
+   "abstract" : "Encryption/decryption module",
    "author" : [
-      "unknown"
+      "Brad Barden <iamb@mifflinet.net>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "ExtUtils::MakeMaker version 6.64, CPAN::Meta::Converter version 2.120921",
+   "generated_by" : "Module::Build version 0.4008, CPAN::Meta::Converter version 2.120921",
    "license" : [
-      "unknown"
+      "perl_5"
    ],
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
       "version" : "2"
    },
    "name" : "GnuPG-Crypticle",
-   "no_index" : {
-      "directory" : [
-         "t",
-         "inc"
-      ]
-   },
    "prereqs" : {
       "build" : {
          "requires" : {
-            "ExtUtils::MakeMaker" : "0"
+            "Test::More" : "0"
          }
       },
       "configure" : {
          "requires" : {
-            "ExtUtils::MakeMaker" : "0"
+            "Module::Build" : "0.40"
          }
       },
       "runtime" : {
@@ -40,10 +34,22 @@
             "IO::Handle" : "0",
             "Moose" : "2",
             "MooseX::Role::Tempdir" : "0",
-            "Test::More" : "0"
+            "namespace::autoclean" : "0",
+            "perl" : "5.006"
          }
       }
    },
+   "provides" : {
+      "GnuPG::Crypticle" : {
+         "file" : "lib/GnuPG/Crypticle.pm",
+         "version" : "0.022"
+      }
+   },
    "release_status" : "stable",
-   "version" : "0.021"
+   "resources" : {
+      "license" : [
+         "http://dev.perl.org/licenses/"
+      ]
+   },
+   "version" : "0.022"
 }

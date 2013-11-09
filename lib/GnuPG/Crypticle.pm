@@ -14,11 +14,11 @@ GnuPG::Crypticle - Encryption/decryption module
 
 =head1 VERSION
 
-Version 0.01
+Version 0.022
 
 =cut
 
-our $VERSION = '0.021';
+our $VERSION = '0.022';
 
 
 =head1 SYNOPSIS
@@ -185,7 +185,7 @@ sub decrypt {
   my ($self, %opts) = @_;
   $opts{gpg_args} ||= [];
   push(@{$opts{gpg_args}}, '-d');
-  return $self->_call_gpg(%opts);
+  return $self->call_gpg(%opts);
 }
 
 =head2 encrypt
@@ -225,7 +225,7 @@ sub encrypt {
   $opts{gpg_args} ||= [];
   my $rcpt = delete $opts{rcpt};
   push(@{$opts{gpg_args}}, '-r', $rcpt, '-e');
-  return $self->_call_gpg(%opts);
+  return $self->call_gpg(%opts);
 }
 
 =head2 detect_encryption
@@ -287,13 +287,13 @@ sub detect_encryption {
   return 0;
 }
 
-=head2 _call_gpg
+=head2 call_gpg
 
 (private) calls gpg command with necessary options
 
 =cut
 
-sub _call_gpg {
+sub call_gpg {
   my ($self, %opts) = @_;
   my $dest = delete $opts{dst};
   my $error = delete $opts{err};
@@ -303,7 +303,12 @@ sub _call_gpg {
   # close-on-exec
   my ($stdout,$stderr,$stdin);
   if ($dest) {
-    unless (defined(fileno($dest))) {
+    if (defined(fileno($dest))) {
+      unless(binmode($dest)) {
+        die "Failed to flush dest handle to raw: $!";
+      }
+    }
+    else {
       my $file = $dest;
       $dest = undef;
       unless (open($dest, '>:raw', $file)) {
@@ -321,7 +326,12 @@ sub _call_gpg {
     }
   }
   if ($error) {
-    unless (defined(fileno($error))) {
+    if (defined(fileno($error))) {
+      unless (binmode($error)) {
+        die "failed to flush error handle to raw: $!";
+      }
+    }
+    else {
       my $file = $error;
       $error = undef;
       unless (open($error, '>>:raw', $file)) {
@@ -339,7 +349,12 @@ sub _call_gpg {
     }
   }
   if ($source) {
-    unless (defined(fileno($source))) {
+    if (defined(fileno($source))) {
+      unless (binmode($source)) {
+        die "Failed to flush source handle to raw: $!";
+      }
+    }
+    else {
       my $file = $source;
       $source = undef;
       unless (open($source, '<:raw', $file)) {
@@ -438,10 +453,15 @@ sub _open_passphrase_file {
   }
 }
 
+=head2 _open_dev_null
+
+(private) returns a filehandle to /dev/null
+
+=cut
+
 sub _open_dev_null {
-  # not cross platform, is the rest anyway?
   my $fh;
-  unless (open($fh, '<', '/dev/null')) {
+  unless (open($fh, '<', File::Spec->devnull)) {
     die "Failed to open /dev/null: $!";
   }
   return $fh;

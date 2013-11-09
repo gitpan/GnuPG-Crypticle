@@ -12,6 +12,7 @@ my $builder = Module::Build->new(
         'Test::More' => 0,
     },
     requires => {
+        'namespace::autoclean' => 0,
         'perl' => 5.006,
         'Moose' => 2,
         'MooseX::Role::Tempdir' => 0,
